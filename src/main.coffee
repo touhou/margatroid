@@ -86,13 +86,18 @@ do ->
       return ret
     dollmaker: (world) ->
       ret =
-        val: 0
+        # spawn a few extra dolls right away
+        val: 1200
         incr:
           normal: 1
           shooting: 5
         max: 300
         tick: ->
-          @val += if world.shoot then incr.shooting else incr.normal
+          @val += if world.shoot then @incr.shooting else @incr.normal
+          if @val >= @max
+            @val -= @max
+            world.dolls.push world.factory.doll world.boss
+            $('#count').text(world.dolls.length)
 
       return ret
 
@@ -101,6 +106,7 @@ do ->
       @factory = new Factory(svg)
       @player = @factory.player()
       @boss = @factory.boss()
+      @dollmaker = @factory.dollmaker this
       @dolls = []
       @t = 0
       @invincibleUntil = 240
@@ -115,7 +121,7 @@ do ->
         @mouse.y = bound e.pageY - offset.top, rad, 480-rad
       @shoot = false
       $('#content').mousedown (e) =>
-        @shoot = not @invincible()
+        @shoot = true
       $('#content').mouseup (e) =>
         @shoot = false
     invincible: ->
@@ -130,12 +136,7 @@ do ->
         @invincibleUntil = @t + 240
 
       @boss.position.setXY (320 + 240 * Math.cos @t*Math.PI/240), @boss.position.y
-
-      if @t % (60*5) == 0
-        @dolls.push @factory.doll @boss
-        $('#count').text(@dolls.length)
-        if @t == 0 then for i in [0...3]
-          @dolls.push @factory.doll @boss
+      @dollmaker.tick()
 
       for doll in @dolls
         if @shoot
