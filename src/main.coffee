@@ -52,10 +52,11 @@ do ->
     velocity.y = bound velocity.y, -max, max
 
   class Render
-    constructor: (@self, sprite) ->
-      @self.position.event.bind 'move', =>
-        sprite.setAttribute 'cx', @self.position.x
-        sprite.setAttribute 'cy', @self.position.y
+    constructor: (@self, @sprite, onMove=->) ->
+      @self.position.event.bind 'move', (e, args) =>
+        @sprite.setAttribute 'cx', @self.position.x
+        @sprite.setAttribute 'cy', @self.position.y
+        onMove this
 
   class Factory
     constructor: (@svg) ->
@@ -128,7 +129,7 @@ do ->
     invincible: ->
       return @t <= @invincibleUntil
     tick: ->
-      seek @player.position, 3, @mouse
+      seek @player.position, 5, @mouse
       # player death
       collides = _.detect @dolls, (d) => d.hitbox.isCollision @player.hitbox
       if collides and not @invincible()
