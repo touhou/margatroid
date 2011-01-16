@@ -1,3 +1,4 @@
+
 do ->
   assert = (val, msg) ->
     unless val then throw new Error msg
@@ -131,8 +132,7 @@ do ->
       # player death
       collides = _.detect @dolls, (d) => d.hitbox.isCollision @player.hitbox
       if collides and not @invincible()
-        @player.position.x = 320
-        @player.position.y = 320
+        @player.position.setXY 320, 320
         @invincibleUntil = @t + 240
 
       @boss.position.setXY (320 + 240 * Math.cos @t*Math.PI/240), @boss.position.y
