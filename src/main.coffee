@@ -25,11 +25,12 @@ do ->
     setXY: (@x, @y) ->
       @event.trigger 'move', this
       return this
+  class Velocity extends Position
 
   bound = (val, min, max) ->
     return Math.min max, Math.max min, val
-  class Velocity extends Position
 
+  # This can collide with stuff
   class Hitbox
     constructor: (@self, @radius) ->
     isCollision: (that) ->
@@ -37,6 +38,8 @@ do ->
       allowed = @radius + that.radius
       return allowed >= distance
 
+  # Move a point towards another point at a fixed speed. (Player
+  # follows the mouse.)
   seek = (position, speed, target) ->
     distance = position.distance target
     if distance <= speed
@@ -44,12 +47,14 @@ do ->
     else
       trig = position.trig target
       position.addXY -trig.cos * speed, -trig.sin * speed
-  seekVelocity = (velocity, position, speed, target, max=10) ->
+  # Like seek, changing velocity instead of position. (Dolls chase the
+  # player.) You'll overshoot the target - this is intentional. You
+  # can get going REALLY fast with this - not quite intentional, but
+  # the momentum-absorbing walls mitigate the worst of it; not worth
+  # fixing.
+  seekVelocity = (velocity, position, speed, target) ->
     trig = position.trig target
     velocity.addXY -trig.cos * speed, -trig.sin * speed
-    # This isn't exact because diagonals, but I can't be arsed to fix it
-    velocity.x = bound velocity.x, -max, max
-    velocity.y = bound velocity.y, -max, max
 
   class Render
     constructor: (@self, @svg, @sprite, onMove=->) ->
