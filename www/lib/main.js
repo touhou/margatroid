@@ -114,10 +114,12 @@
         return ret;
       };
       Factory.prototype.doll = function(boss) {
-        var ret;
+        var angle, ret, speed;
         ret = {};
         ret.position = new Position(ret, boss.position.x, boss.position.y);
-        ret.velocity = new Velocity(ret, 5 - 10 * Math.random(), 5 - 10 * Math.random());
+        angle = 2 * Math.PI * Math.random();
+        speed = 2 + 3 * Math.random();
+        ret.velocity = new Velocity(ret, speed * Math.cos(angle), speed * Math.sin(angle));
         ret.hitbox = new Hitbox(ret, 5);
         ret.sprite = this.svg.circle(ret.position.x, ret.position.y, ret.hitbox.radius, {
           fill: 'red'
