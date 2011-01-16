@@ -139,8 +139,11 @@
           y: this.player.position.y
         };
         $('#content').mousemove(__bind(function(e) {
-          this.mouse.x = e.pageX;
-          return this.mouse.y = e.pageY;
+          var offset, rad;
+          offset = $('#content').offset();
+          rad = this.player.hitbox.radius;
+          this.mouse.x = bound(e.pageX - offset.left, rad, 640 - rad);
+          return this.mouse.y = bound(e.pageY - offset.top, rad, 480 - rad);
         }, this));
         this.shoot = false;
         $('#content').mousedown(__bind(function(e) {
@@ -156,8 +159,8 @@
       World.prototype.tick = function() {
         var collides, doll, i, _i, _len, _ref, _ref2, _ref3;
         seek(this.player.position, 3, this.mouse);
-        this.player.sprite.setAttribute('cx', this.player.position.x - this.player.hitbox.radius);
-        this.player.sprite.setAttribute('cy', this.player.position.y - this.player.hitbox.radius);
+        this.player.sprite.setAttribute('cx', this.player.position.x);
+        this.player.sprite.setAttribute('cy', this.player.position.y);
         collides = _.detect(this.dolls, __bind(function(d) {
           return d.hitbox.isCollision(this.player.hitbox);
         }, this));
@@ -167,7 +170,7 @@
           this.invincibleUntil = this.t + 240;
         }
         this.boss.position.x = 320 + 240 * Math.cos(this.t * Math.PI / 240);
-        this.boss.sprite.setAttribute('cx', this.boss.position.x - this.boss.hitbox.radius);
+        this.boss.sprite.setAttribute('cx', this.boss.position.x);
         if (this.t % (60 * 5) === 0) {
           this.dolls.push(this.factory.doll(this.boss));
           $('#count').text(this.dolls.length);
@@ -184,8 +187,8 @@
             seekVelocity(doll.velocity, doll.position, 0.1, this.player.position);
           }
           doll.position.addXY(doll.velocity.x, doll.velocity.y);
-          doll.sprite.setAttribute('cx', doll.position.x - doll.hitbox.radius);
-          doll.sprite.setAttribute('cy', doll.position.y - doll.hitbox.radius);
+          doll.sprite.setAttribute('cx', doll.position.x);
+          doll.sprite.setAttribute('cy', doll.position.y);
           if (!((0 < (_ref2 = doll.position.x) && _ref2 < 640))) {
             doll.position.x = doll.position.x < 0 ? 0 : 640;
             doll.velocity.x *= -0.4;

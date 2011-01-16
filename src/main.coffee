@@ -88,8 +88,10 @@ do ->
         x:@player.position.x
         y:@player.position.y
       $('#content').mousemove (e) =>
-        @mouse.x = e.pageX
-        @mouse.y = e.pageY
+        offset = $('#content').offset()
+        rad = @player.hitbox.radius
+        @mouse.x = bound e.pageX - offset.left, rad, 640-rad
+        @mouse.y = bound e.pageY - offset.top, rad, 480-rad
       @shoot = false
       $('#content').mousedown (e) =>
         @shoot = not @invincible()
@@ -99,8 +101,8 @@ do ->
       return @t <= @invincibleUntil
     tick: ->
       seek @player.position, 3, @mouse
-      @player.sprite.setAttribute 'cx',@player.position.x - @player.hitbox.radius
-      @player.sprite.setAttribute 'cy',@player.position.y - @player.hitbox.radius
+      @player.sprite.setAttribute 'cx', @player.position.x
+      @player.sprite.setAttribute 'cy', @player.position.y
       # player death
       collides = _.detect @dolls, (d) => d.hitbox.isCollision @player.hitbox
       if collides and not @invincible()
@@ -109,7 +111,7 @@ do ->
         @invincibleUntil = @t + 240
 
       @boss.position.x = 320 + 240 * Math.cos @t*Math.PI/240
-      @boss.sprite.setAttribute 'cx',@boss.position.x - @boss.hitbox.radius
+      @boss.sprite.setAttribute 'cx',@boss.position.x
 
       if @t % (60*5) == 0
         @dolls.push @factory.doll @boss
@@ -121,8 +123,8 @@ do ->
         if @shoot
           seekVelocity doll.velocity, doll.position, 0.1, @player.position
         doll.position.addXY doll.velocity.x, doll.velocity.y
-        doll.sprite.setAttribute 'cx',doll.position.x - doll.hitbox.radius
-        doll.sprite.setAttribute 'cy',doll.position.y - doll.hitbox.radius
+        doll.sprite.setAttribute 'cx',doll.position.x
+        doll.sprite.setAttribute 'cy',doll.position.y
         # bounce, and lose momentum.
         # lose momentum: dolls slowly 'calm down' when alice isn't under attack
         unless 0 < doll.position.x < 640
