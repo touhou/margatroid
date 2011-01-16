@@ -5,6 +5,7 @@ do ->
   # 2D coordinates
   class Position
     constructor: (@self, @x, @y) ->
+      @event = $({})
     distance: (that) ->
       dx = @x - that.x
       dy = @y - that.y
@@ -19,8 +20,10 @@ do ->
     addXY: (dx, dy) ->
       assert dx?
       assert dy?
-      @x += dx
-      @y += dy
+      @setXY @x+dx, @y+dy
+    setXY: (@x, @y) ->
+      @event.trigger 'move', this
+      return this
 
   bound = (val, min, max) ->
     return Math.min max, Math.max min, val
@@ -36,8 +39,7 @@ do ->
   seek = (position, speed, target) ->
     distance = position.distance target
     if distance <= speed
-      position.x = target.x
-      position.y = target.y
+      position.setXY target.x, target.y
     else
       trig = position.trig target
       position.addXY -trig.cos * speed, -trig.sin * speed
@@ -48,13 +50,19 @@ do ->
     velocity.x = bound velocity.x, -max, max
     velocity.y = bound velocity.y, -max, max
 
+  class Render
+    constructor: (@self, sprite) ->
+      @self.position.event.bind 'move', =>
+        sprite.setAttribute 'cx', @self.position.x
+        sprite.setAttribute 'cy', @self.position.y
+
   class Factory
     constructor: (@svg) ->
     player: ->
       ret = {}
       ret.position = new Position ret, 320, 320
       ret.hitbox = new Hitbox ret, 10
-      ret.sprite = @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
+      ret.render = new Render ret, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
         fill: 'blue'
       return ret
 
@@ -62,7 +70,7 @@ do ->
       ret = {}
       ret.position = new Position ret, 320, 80
       ret.hitbox = new Hitbox ret, 20
-      ret.sprite = @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
+      ret.render = new Render ret, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
         fill: 'red'
       return ret
 
@@ -73,8 +81,19 @@ do ->
       speed = 2 + 3*Math.random()
       ret.velocity = new Velocity ret, speed*Math.cos(angle), speed*Math.sin(angle)
       ret.hitbox = new Hitbox ret, 5
-      ret.sprite = @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
+      ret.render = new Render ret, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
         fill: 'red'
+      return ret
+    dollmaker: (world) ->
+      ret =
+        val: 0
+        incr:
+          normal: 1
+          shooting: 5
+        max: 300
+        tick: ->
+          @val += if world.shoot then incr.shooting else incr.normal
+
       return ret
 
   class World
@@ -103,8 +122,6 @@ do ->
       return @t <= @invincibleUntil
     tick: ->
       seek @player.position, 3, @mouse
-      @player.sprite.setAttribute 'cx', @player.position.x
-      @player.sprite.setAttribute 'cy', @player.position.y
       # player death
       collides = _.detect @dolls, (d) => d.hitbox.isCollision @player.hitbox
       if collides and not @invincible()
@@ -112,8 +129,7 @@ do ->
         @player.position.y = 320
         @invincibleUntil = @t + 240
 
-      @boss.position.x = 320 + 240 * Math.cos @t*Math.PI/240
-      @boss.sprite.setAttribute 'cx',@boss.position.x
+      @boss.position.setXY (320 + 240 * Math.cos @t*Math.PI/240), @boss.position.y
 
       if @t % (60*5) == 0
         @dolls.push @factory.doll @boss
@@ -125,8 +141,6 @@ do ->
         if @shoot
           seekVelocity doll.velocity, doll.position, 0.1, @player.position
         doll.position.addXY doll.velocity.x, doll.velocity.y
-        doll.sprite.setAttribute 'cx',doll.position.x
-        doll.sprite.setAttribute 'cy',doll.position.y
         # bounce, and lose momentum.
         # lose momentum: dolls slowly 'calm down' when alice isn't under attack
         unless 0 < doll.position.x < 640
