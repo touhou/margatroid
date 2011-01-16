@@ -139,6 +139,15 @@ do ->
       @t = 0
       @vulnerable = @factory.cooldown this, 240
       @weapon = @factory.cooldown this, 5
+      @paused = false
+
+      $(document).keydown (e) =>
+        if e.which == 27 # esc
+          @paused = not @paused
+          if @paused
+            $('#paused').show(400)
+          else
+            $('#paused').hide()
 
       @mouse =
         x:@player.position.x
@@ -154,6 +163,7 @@ do ->
       $('#content').mouseup (e) =>
         @shoot = false
     tick: ->
+      if @paused then return
       # player movement
       seek @player.position, 5, @mouse
       # player bullets

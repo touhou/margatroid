@@ -1,5 +1,19 @@
 #content {
+    position:relative;
     width:640px;
     height:480px;
     border: 1px solid black;
 }
+#fps {
+}
+#paused {
+    position:absolute;left:0px;top:0px;
+    text-align:center;
+    width:640px;
+    height:480px;
+    background:#fff;
+}
+svg {
+    position:absolute;left:0px;top:0px;
+}
+
