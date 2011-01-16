@@ -6,12 +6,12 @@
 }
 #fps {
 }
-#paused {
+#paused, #intro {
     position:absolute;left:0px;top:0px;
     text-align:center;
     width:640px;
     height:480px;
-    background:#fff;
+    z-index:1;
 }
 svg {
     position:absolute;left:0px;top:0px;

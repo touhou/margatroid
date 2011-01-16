@@ -1,0 +1,30 @@
+- sfx
+-- shoot
+-- shots-hit
+-- boss death
+-- player death
+-- lose
+-- win
+- music
+-- separate music for living-dolls vs nonliving-dolls?
+- graphics
+-- background
+--- living
+--- nonliving
+-- player (reimu?)
+-- dolls
+--- living
+--- nonliving
+-- alice
+-- player-death effect
+-- boss-death effect
+- click to start
+- visible boss healthbar
+- boss death
+- render with svg, not circles
+- multiple levels. variables:
+-- living/nonliving dolls
+-- living dolls: chase/shoot bullets/both; all-the-same-strategy/mixture
+-- alice builds (faster/normally) while shooting
+-- max dolls onscreen (still spawn, but have one float offscreen every so often)
+- save replays

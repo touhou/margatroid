@@ -191,7 +191,7 @@ do ->
           @vulnerable.clear()
           @player.position.setXY 320, 320
 
-      @boss.position.setXY (320 + 240 * Math.cos @t*Math.PI/240), @boss.position.y
+      @boss.position.setXY (320 + 240 * Math.sin @t*Math.PI/240), @boss.position.y
       @dollmaker.tick()
 
       for doll in @dolls
@@ -211,6 +211,9 @@ do ->
 
   onload = (svg) ->
     world = new World(svg)
-    setInterval (->world.tick()), 16
+    $(document).bind 'click.intro', ->
+      $(document).unbind 'click.intro'
+      $('#intro').hide(400)
+      setInterval (->world.tick()), 16
   jQuery ($)->
     canvas = $('#content').svg(onLoad: onload)
