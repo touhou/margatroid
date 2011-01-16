@@ -52,11 +52,13 @@ do ->
     velocity.y = bound velocity.y, -max, max
 
   class Render
-    constructor: (@self, @sprite, onMove=->) ->
+    constructor: (@self, @svg, @sprite, onMove=->) ->
       @self.position.event.bind 'move', (e, args) =>
         @sprite.setAttribute 'cx', @self.position.x
         @sprite.setAttribute 'cy', @self.position.y
         onMove this
+    destroy: ->
+      @svg.remove @sprite
 
   class Factory
     constructor: (@svg) ->
@@ -64,7 +66,7 @@ do ->
       ret = {}
       ret.position = new Position ret, 320, 320
       ret.hitbox = new Hitbox ret, 10
-      ret.render = new Render ret, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
+      ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
         fill: 'blue'
       return ret
 
@@ -72,8 +74,9 @@ do ->
       ret = {}
       ret.position = new Position ret, 320, 80
       ret.hitbox = new Hitbox ret, 20
-      ret.render = new Render ret, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
+      ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
         fill: 'red'
+      ret.health = 250
       return ret
 
     doll: (boss) ->
@@ -83,8 +86,16 @@ do ->
       speed = 2 + 3*Math.random()
       ret.velocity = new Velocity ret, speed*Math.cos(angle), speed*Math.sin(angle)
       ret.hitbox = new Hitbox ret, 5
-      ret.render = new Render ret, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
+      ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
         fill: 'red'
+      return ret
+    bullet: (player) ->
+      ret = {}
+      ret.position = new Position ret, player.position.x, player.position.y
+      ret.velocity = new Velocity ret, 0, -8
+      ret.hitbox = new Hitbox ret, 3
+      ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
+        fill: 'blue'
       return ret
     dollmaker: (world) ->
       ret =
@@ -100,18 +111,28 @@ do ->
             @val -= @max
             world.dolls.push world.factory.doll world.boss
             $('#count').text(world.dolls.length)
-
+      return ret
+    cooldown: (world, cooldown) ->
+      ret =
+        cooldown: cooldown
+        isReady: ->
+          return world.t >= @until
+        clear: ->
+          @until = world.t + @cooldown
+      ret.clear()
       return ret
 
   class World
     constructor: (svg) ->
       @factory = new Factory(svg)
       @player = @factory.player()
+      @bullets = []
       @boss = @factory.boss()
       @dollmaker = @factory.dollmaker this
       @dolls = []
       @t = 0
-      @invincibleUntil = 240
+      @vulnerable = @factory.cooldown this, 240
+      @weapon = @factory.cooldown this, 5
 
       @mouse =
         x:@player.position.x
@@ -126,15 +147,33 @@ do ->
         @shoot = true
       $('#content').mouseup (e) =>
         @shoot = false
-    invincible: ->
-      return @t <= @invincibleUntil
     tick: ->
+      # player movement
       seek @player.position, 5, @mouse
+      # player bullets
+      if @shoot and @weapon.isReady()
+        @bullets.push @factory.bullet @player
+        @weapon.clear()
+      bs = []
+      for bullet in @bullets
+        bullet.position.addXY bullet.velocity.x, bullet.velocity.y
+        # If it hits the boss, damage the boss and kill the bullet
+        if bullet.hitbox.isCollision @boss.hitbox
+          bullet.render.destroy()
+          @boss.health -= 1
+        # If it's left the playing field, kill it
+        else if bullet.position.y < 0
+          bullet.render.destroy()
+        # else, it stays in play
+        else
+          bs.push bullet
+      @bullets = bs
       # player death
-      collides = _.detect @dolls, (d) => d.hitbox.isCollision @player.hitbox
-      if collides and not @invincible()
-        @player.position.setXY 320, 320
-        @invincibleUntil = @t + 240
+      if @vulnerable.isReady()
+        collides = _.detect @dolls, (d) => d.hitbox.isCollision @player.hitbox
+        if collides
+          @vulnerable.clear()
+          @player.position.setXY 320, 320
 
       @boss.position.setXY (320 + 240 * Math.cos @t*Math.PI/240), @boss.position.y
       @dollmaker.tick()
