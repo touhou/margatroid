@@ -1,0 +1,1 @@
+../../deps/jquery.svg.js
