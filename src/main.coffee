@@ -56,6 +56,7 @@ do ->
     trig = position.trig target
     velocity.addXY -trig.cos * speed, -trig.sin * speed
 
+  # Draw something at a position, updating it when moved.
   class Render
     constructor: (@self, @svg, @sprite, onMove=->) ->
       @self.position.event.bind 'move', (e, args) =>
