@@ -18,7 +18,7 @@
 -- alice
 -- player-death effect
 -- boss-death effect
-- click to start
+-- visible invincibility
 - visible boss healthbar
 - boss death
 - render with svg, not circles
