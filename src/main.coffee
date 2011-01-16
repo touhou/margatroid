@@ -200,12 +200,13 @@ do ->
         doll.position.addXY doll.velocity.x, doll.velocity.y
         # bounce, and lose momentum.
         # lose momentum: dolls slowly 'calm down' when alice isn't under attack
+        elasticity = -0.4 - 0.2*Math.random()
         unless 0 < doll.position.x < 640
           doll.position.x = if doll.position.x < 0 then 0 else 640
-          doll.velocity.x *= -0.4
+          doll.velocity.x *= elasticity
         unless 0 < doll.position.y < 480
           doll.position.y = if doll.position.y < 0 then 0 else 480
-          doll.velocity.y *= -0.4
+          doll.velocity.y *= elasticity
 
       @t += 1
 
