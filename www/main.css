@@ -1,6 +1,7 @@
 body {
     background: black;
     color: white;
+    font-family:monospace;
 }
 #content {
     position:fixed;
