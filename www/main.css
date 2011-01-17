@@ -4,9 +4,7 @@
     height:480px;
     border: 1px solid black;
 }
-#fps {
-}
-#paused, #intro {
+#paused, #intro, #gameover {
     position:absolute;left:0px;top:0px;
     text-align:center;
     width:640px;
@@ -17,4 +15,18 @@
 svg {
     position:absolute;left:0px;top:0px;
 }
+#fullhealth {
+    background: red;
+    background: -webkit-gradient(linear, left top, right top, from(#b00), to(#f44));
+    background: -moz-linear-gradient(left, #b00,f44);
 
+    border:1px solid #800;
+    border-radius:4px;
+    width:640px;
+    height:1em;
+}
+#healthgone {
+    float:right;
+    height:1em;
+    background: black;
+}

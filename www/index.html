@@ -10,8 +10,15 @@
     <script src="lib/main.js"></script>
   </head>
   <body>
-    <div id="fps"><span id="count">0</span> dolls</div>
+    <div id="status">
+      Stage <span id="stage">0</span> |
+      <span id="count">0</span> dolls |
+      <span id="lives">0</span> lives
+      <div id="fullhealth"><div id="healthgone" style="width:0%"></div></div>
+    </div>
     <div id="content">
+      <div id="nonliving"></div>
+      <div id="living" style="display:none"></div>
       <div id="intro">
         <h1>Dollmaker of Bucuresti</h1>
         <p>Click to shoot the dollmaker</p>
@@ -21,6 +28,11 @@
       <div id="paused" style="display:none">
         <h1>Paused</h1>
         <p>press <b>Esc</b> to resume</p>
+      </div>
+      <div id="gameover" style="display:none">
+        <h1>Game Over</h1>
+        <p><a href="">Try again</a></p>
+      </div>
     </div>
   </body>
 </html>

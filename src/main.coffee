@@ -82,7 +82,8 @@ do ->
       ret.hitbox = new Hitbox ret, 20
       ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
         fill: 'red'
-      ret.health = 250
+      ret.fullhealth = 40
+      ret.health = ret.fullhealth
       return ret
 
     doll: (boss) ->
@@ -113,10 +114,13 @@ do ->
         max: 300
         tick: ->
           @val += if world.shoot then @incr.shooting else @incr.normal
-          if @val >= @max
-            @val -= @max
-            world.dolls.push world.factory.doll world.boss
-            $('#count').text(world.dolls.length)
+          spawned = Math.floor @val / @max
+          if spawned > 0
+            @val -= spawned * @max
+            while spawned > 0
+              spawned -= 1
+              world.dolls.push world.factory.doll world.boss
+            $('#count').hide().text(world.dolls.length).show(400)
       return ret
     cooldown: (world, cooldown) ->
       ret =
@@ -132,14 +136,12 @@ do ->
     constructor: (svg) ->
       @factory = new Factory(svg)
       @player = @factory.player()
-      @bullets = []
-      @boss = @factory.boss()
-      @dollmaker = @factory.dollmaker this
-      @dolls = []
       @t = 0
-      @vulnerable = @factory.cooldown this, 240
-      @weapon = @factory.cooldown this, 5
-      @paused = false
+      @bullets = []
+      @dolls = []
+
+      @clearPlayer()
+      @clearFoes()
 
       @mouse =
         x:@player.position.x
@@ -150,8 +152,30 @@ do ->
         @mouse.x = bound e.pageX - offset.left, rad, 640-rad
         @mouse.y = bound e.pageY - offset.top, rad, 480-rad
       @shoot = false
+
+    clearPlayer: (@lives=4) ->
+      $('#lives').hide().text(@lives).show(400)
+      for b in @bullets
+        b.render.destroy()
+      @bullets = []
+
+      @vulnerable = @factory.cooldown this, 240
+      @weapon = @factory.cooldown this, 5
+      @paused = false
+
+    clearFoes: (@stage=1) ->
+      $('#stage').hide().text(@stage).show(400)
+      if @boss?
+        @boss.render.destroy()
+      @boss = @factory.boss()
+      for d in @dolls
+        d.render.destroy()
+      @dolls = []
+
+      @dollmaker = @factory.dollmaker this
+
     start: ->
-      $(document).keydown (e) =>
+      $(document).bind 'keydown.pause', (e) =>
         if e.which == 27 # esc
           @paused = not @paused
           if @paused
@@ -162,6 +186,11 @@ do ->
         @shoot = true
       $('#content').mouseup (e) =>
         @shoot = false
+
+    gameover: ->
+      $(document).unbind 'keydown.pause'
+      @paused = true
+      $('#gameover').show(1000)
 
     tick: ->
       if @paused then return
@@ -185,12 +214,26 @@ do ->
         else
           bs.push bullet
       @bullets = bs
+      healthpct = Math.max 0, @boss.health/@boss.fullhealth
+      $('#healthgone').css(width:(100 * (1 - healthpct))+'%')
+      # boss death
+      if healthpct == 0
+        # extra lives for beating stages
+        if @stage == 1 or @stage % 3 == 0
+          @lives += 1
+          $('#lives').hide().text(@lives).show(400)
+        @clearFoes @stage+1
+
       # player death
       if @vulnerable.isReady()
         collides = _.detect @dolls, (d) => d.hitbox.isCollision @player.hitbox
         if collides
+          @lives -= 1
+          $('#lives').hide().text(@lives).show(400)
           @vulnerable.clear()
           @player.position.setXY 320, 320
+          if @lives < 0
+            @gameover()
 
       @boss.position.setXY (320 + 240 * Math.sin @t*Math.PI/240), @boss.position.y
       @dollmaker.tick()
