@@ -9,6 +9,7 @@
 -- win
 - music
 -- separate music for living-dolls vs nonliving-dolls?
+- rasterize graphics, convert to canvas; svg's too slow for even this!
 - graphics
 -- background
 --- living

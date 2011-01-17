@@ -23,6 +23,11 @@ task :emacs do
   sh 'emacs todo `find www/ -type f -and \( -name "*.html" -o -name "*.css" \)` `find src test -type f` &'
 end
 
+desc 'graphics editing'
+task :inkscape do
+  sh 'inkscape www/sprite.svg &'
+end
+
 desc 'line count of sources'
 task :wc do
   sh 'wc -l `find src -type f`; wc -l `find test -type f`'

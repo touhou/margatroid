@@ -2,7 +2,8 @@
 do ->
   console ?= {log:(->), info:(->), warn:(->),error:(->),trace:(->)}
   assert = (val, msg) ->
-    unless val then throw new Error msg
+    unless val then throw new Error msg ? ''+val
+    return val
 
   # 2D coordinates
   class Position
@@ -59,16 +60,22 @@ do ->
 
   # Draw something at a position, updating it when moved.
   class Render
-    constructor: (@self, @svg, @sprite, onMove=->) ->
-      @self.position.event.bind 'move', (e, args) =>
-        @sprite.setAttribute 'cx', @self.position.x
-        @sprite.setAttribute 'cy', @self.position.y
-        onMove this
+    constructor: (@self, @svg, @sprite, @onMoveFn=->) ->
+      @self.position.event.bind 'move', => @onMove()
+      @onMove()
+    onMove: ->
+      #$(@sprite).css(left:@self.position.x+'px', top:@self.position.y+'px')
+      @sprite.setAttribute 'cx', @self.position.x
+      @sprite.setAttribute 'cy', @self.position.y
+      @sprite.setAttribute 'x', @self.position.x
+      @sprite.setAttribute 'y', @self.position.y
+      #@sprite.setAttribute 'transform', 'translate('+@self.position.x+','+@self.position.y+')'
+      @onMoveFn this
     destroy: ->
       @svg.remove @sprite
 
   class Factory
-    constructor: (@svg, @config) ->
+    constructor: (@svg, @sprite, @config) ->
     player: ->
       ret = {}
       ret.position = new Position ret, 320, 320
@@ -94,8 +101,9 @@ do ->
       speed = 2 + 3*Math.random()
       ret.velocity = new Velocity ret, speed*Math.cos(angle), speed*Math.sin(angle)
       ret.hitbox = new Hitbox ret, 5
-      ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
-        fill: 'red'
+      dead = @svg.svg()
+      @svg.add dead, @sprite.deaddoll
+      ret.render = new Render ret, @svg, dead
       return ret
     bullet: (player) ->
       ret = {}
@@ -134,9 +142,9 @@ do ->
       return ret
 
   class World
-    constructor: (svg) ->
+    constructor: (svg, sprites) ->
       @config = {}
-      @factory = new Factory(svg, @config)
+      @factory = new Factory(svg, sprites, @config)
       @player = @factory.player()
       @t = 0
       @bullets = []
@@ -293,12 +301,22 @@ do ->
 
       @t += 1
 
-  onload = (svg) ->
-    world = new World(svg)
+  onload = (svg, sprites) ->
+    world = new World(svg, sprites)
     $(document).bind 'click.intro', ->
       $(document).unbind 'click.intro'
       $('#intro').fadeOut()
       setInterval (->world.tick()), 16
       world.start()
+
   jQuery ($)->
-    canvas = $('#content').svg(onLoad: onload)
+    canvas = $('#content').svg onLoad: (svg) ->
+      $('#loader').svg loadURL:'sprite.svg', onLoad: (loader) ->
+        load = (id) ->
+          doc = assert $(loader.root()).find(id)[0], id
+          $(doc).removeAttr 'id'
+          return svg.toSVG doc
+        sprites =
+          deaddoll: load '#deaddoll'
+          livedoll: load '#livedoll'
+        onload svg, sprites

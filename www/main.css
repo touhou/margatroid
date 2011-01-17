@@ -3,6 +3,9 @@ body {
     color: white;
     font-family:monospace;
 }
+#loader {
+    display:none;
+}
 #content {
     position:fixed;
     top:50%;left:50%;
