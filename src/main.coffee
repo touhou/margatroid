@@ -141,6 +141,16 @@ do ->
       @weapon = @factory.cooldown this, 5
       @paused = false
 
+      @mouse =
+        x:@player.position.x
+        y:@player.position.y
+      $(document).mousemove (e) =>
+        offset = $('#content').offset()
+        rad = @player.hitbox.radius
+        @mouse.x = bound e.pageX - offset.left, rad, 640-rad
+        @mouse.y = bound e.pageY - offset.top, rad, 480-rad
+      @shoot = false
+    start: ->
       $(document).keydown (e) =>
         if e.which == 27 # esc
           @paused = not @paused
@@ -148,20 +158,11 @@ do ->
             $('#paused').show(400)
           else
             $('#paused').hide()
-
-      @mouse =
-        x:@player.position.x
-        y:@player.position.y
-      $('#content').mousemove (e) =>
-        offset = $('#content').offset()
-        rad = @player.hitbox.radius
-        @mouse.x = bound e.pageX - offset.left, rad, 640-rad
-        @mouse.y = bound e.pageY - offset.top, rad, 480-rad
-      @shoot = false
       $('#content').mousedown (e) =>
         @shoot = true
       $('#content').mouseup (e) =>
         @shoot = false
+
     tick: ->
       if @paused then return
       # player movement
@@ -216,5 +217,6 @@ do ->
       $(document).unbind 'click.intro'
       $('#intro').hide(400)
       setInterval (->world.tick()), 16
+      world.start()
   jQuery ($)->
     canvas = $('#content').svg(onLoad: onload)

@@ -11,6 +11,7 @@
     text-align:center;
     width:640px;
     height:480px;
+    background-color:rgba(255,255,255,0.5);
     z-index:1;
 }
 svg {
