@@ -1,15 +1,20 @@
+body {
+    background: black;
+    color: white;
+}
 #content {
     position:relative;
     width:640px;
     height:480px;
     border: 1px solid black;
+    color:blue;
 }
 #paused, #intro, #gameover {
     position:absolute;left:0px;top:0px;
     text-align:center;
     width:640px;
     height:480px;
-    background-color:rgba(255,255,255,0.5);
+    background-color:rgba(195,195,255,0.5);
     z-index:1;
 }
 svg {
