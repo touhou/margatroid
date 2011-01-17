@@ -170,15 +170,15 @@ do ->
       _.extend @config,
         doll:
           # Stage 1: velocity == 0, dolls don't chase. Speed up every
-          # 4 stages (2, 5, 9...)
-          seekVelocity: 0.06 * Math.floor (@stage + 2)/4
+          # 3 stages after that (2, 5, 8...)
+          seekVelocity: 0 + 0.03 * Math.floor (@stage+1) / 3
         boss:
           # Boss health increases a little every stage.
           health: 30 + @stage * 2
           # Boss speed increases a little every stage. This is also a
           # nice hack to make the boss spawn at a 'different' location
           # when killed, without bothering with randomness.
-          speed: (4 + @stage) / 240 / 6
+          speed: (4 + @stage) / 240 / 7
         dollmaker:
           # Start out with 4 dolls per turn. From stage 3 (5 dolls),
           # increase starting dolls by 1 per 5 rounds (3, 8, 13...)
