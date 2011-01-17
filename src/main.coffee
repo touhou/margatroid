@@ -120,7 +120,7 @@ do ->
             while spawned > 0
               spawned -= 1
               world.dolls.push world.factory.doll world.boss
-            $('#count').hide().text(world.dolls.length).show(400)
+            $('#count').hide().text(world.dolls.length).fadeIn()
       return ret
     cooldown: (world, cooldown) ->
       ret =
@@ -154,7 +154,7 @@ do ->
       @shoot = false
 
     clearPlayer: (@lives=4) ->
-      $('#lives').hide().text(@lives).show(400)
+      $('#lives').hide().text(@lives).fadeIn()
       for b in @bullets
         b.render.destroy()
       @bullets = []
@@ -164,7 +164,7 @@ do ->
       @paused = false
 
     clearFoes: (@stage=1) ->
-      $('#stage').hide().text(@stage).show(400)
+      $('#stage').hide().text(@stage).fadeIn()
       if @boss?
         @boss.render.destroy()
       @boss = @factory.boss()
@@ -179,18 +179,26 @@ do ->
         if e.which == 27 # esc
           @paused = not @paused
           if @paused
-            $('#paused').show(400)
+            $('#paused').fadeIn()
           else
-            $('#paused').hide()
+            $('#paused').fadeOut()
       $('#content').mousedown (e) =>
+        if @paused then return
         @shoot = true
+        $('#living').fadeIn('fast')
+        $('#nonliving').fadeOut('fast')
+        return false
       $('#content').mouseup (e) =>
+        if @paused then return
         @shoot = false
+        $('#living, #nonliving').stop(true,true)
+        $('#living').fadeOut('fast')
+        $('#nonliving').fadeIn('fast')
 
     gameover: ->
       $(document).unbind 'keydown.pause'
       @paused = true
-      $('#gameover').show(1000)
+      $('#gameover').fadeIn('slow')
 
     tick: ->
       if @paused then return
@@ -221,7 +229,7 @@ do ->
         # extra lives for beating stages
         if @stage == 1 or @stage % 3 == 0
           @lives += 1
-          $('#lives').hide().text(@lives).show(400)
+          $('#lives').hide().text(@lives).fadeIn()
         @clearFoes @stage+1
 
       # player death
@@ -229,7 +237,7 @@ do ->
         collides = _.detect @dolls, (d) => d.hitbox.isCollision @player.hitbox
         if collides
           @lives -= 1
-          $('#lives').hide().text(@lives).show(400)
+          $('#lives').hide().text(@lives).fadeIn()
           @vulnerable.clear()
           @player.position.setXY 320, 320
           if @lives < 0
@@ -258,7 +266,7 @@ do ->
     world = new World(svg)
     $(document).bind 'click.intro', ->
       $(document).unbind 'click.intro'
-      $('#intro').hide(400)
+      $('#intro').fadeOut()
       setInterval (->world.tick()), 16
       world.start()
   jQuery ($)->

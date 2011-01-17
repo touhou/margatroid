@@ -30,3 +30,14 @@ svg {
     height:1em;
     background: black;
 }
+#living, #nonliving {
+    position:absolute;left:0px;top:0px;
+    width:640px;
+    height:480px;
+}
+#living {
+    background: #400;
+}
+#nonliving {
+    background: #ccf;
+}
