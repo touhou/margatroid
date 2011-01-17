@@ -1,5 +1,6 @@
 
 do ->
+  console ?= {log:(->), info:(->), warn:(->),error:(->),trace:(->)}
   assert = (val, msg) ->
     unless val then throw new Error msg
 
@@ -67,7 +68,7 @@ do ->
       @svg.remove @sprite
 
   class Factory
-    constructor: (@svg) ->
+    constructor: (@svg, @config) ->
     player: ->
       ret = {}
       ret.position = new Position ret, 320, 320
@@ -82,7 +83,7 @@ do ->
       ret.hitbox = new Hitbox ret, 20
       ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
         fill: 'red'
-      ret.fullhealth = 40
+      ret.fullhealth = @config.boss.health
       ret.health = ret.fullhealth
       return ret
 
@@ -107,11 +108,11 @@ do ->
     dollmaker: (world) ->
       ret =
         # spawn a few extra dolls right away
-        val: 1200
+        val: @config.dollmaker.start * @config.dollmaker.max
         incr:
-          normal: 1
-          shooting: 5
-        max: 300
+          normal: @config.dollmaker.incr.normal
+          shooting: @config.dollmaker.incr.shooting
+        max: @config.dollmaker.max
         tick: ->
           @val += if world.shoot then @incr.shooting else @incr.normal
           spawned = Math.floor @val / @max
@@ -134,14 +135,15 @@ do ->
 
   class World
     constructor: (svg) ->
-      @factory = new Factory(svg)
+      @config = {}
+      @factory = new Factory(svg, @config)
       @player = @factory.player()
       @t = 0
       @bullets = []
       @dolls = []
 
-      @clearPlayer()
       @clearFoes()
+      @clearPlayer()
 
       @mouse =
         x:@player.position.x
@@ -165,6 +167,35 @@ do ->
 
     clearFoes: (@stage=1) ->
       $('#stage').hide().text(@stage).fadeIn()
+      _.extend @config,
+        doll:
+          # Stage 1: velocity == 0, dolls don't chase. Speed up every
+          # 4 stages (2, 5, 9...)
+          seekVelocity: 0.06 * Math.floor (@stage + 2)/4
+        boss:
+          # Boss health increases a little every stage.
+          health: 30 + @stage * 2
+          # Boss speed increases a little every stage. This is also a
+          # nice hack to make the boss spawn at a 'different' location
+          # when killed, without bothering with randomness.
+          speed: (4 + @stage) / 240 / 6
+        dollmaker:
+          # Start out with 4 dolls per turn. From stage 3 (5 dolls),
+          # increase starting dolls by 1 per 5 rounds (3, 8, 13...)
+          start: 4 + Math.floor (@stage + 2)/5
+          # Spawn dolls a little faster every round. Power fns so it's
+          # a percentage faster every time, and high levels don't have
+          # huge jumps relative to early levels, or have (for example)
+          # level 100 spawn infinite dolls per frame.
+          max: Math.floor 333 * Math.pow 0.96, @stage-1
+          incr:
+            # Normal spawn rate is a baseline.
+            normal: 1
+            # Spawn even faster while the player shoots, a little
+            # faster every few rounds (7, 14, 21...)
+            shooting: 5 + Math.floor (stage-1)/7
+      console.log 'hi', @stage, JSON.stringify @config
+
       if @boss?
         @boss.render.destroy()
       @boss = @factory.boss()
@@ -243,12 +274,12 @@ do ->
           if @lives < 0
             @gameover()
 
-      @boss.position.setXY (320 + 240 * Math.sin @t*Math.PI/240), @boss.position.y
+      @boss.position.setXY (320 + 240 * Math.sin @t*Math.PI*@config.boss.speed), @boss.position.y
       @dollmaker.tick()
 
       for doll in @dolls
         if @shoot
-          seekVelocity doll.velocity, doll.position, 0.1, @player.position
+          seekVelocity doll.velocity, doll.position, @config.doll.seekVelocity, @player.position
         doll.position.addXY doll.velocity.x, doll.velocity.y
         # bounce, and lose momentum.
         # lose momentum: dolls slowly 'calm down' when alice isn't under attack
