@@ -31,7 +31,7 @@ body {
     color:white;
     margin-top: -3em;
 }
-svg {
+canvas {
     position:absolute;left:0px;top:0px;
 }
 #fullhealth {

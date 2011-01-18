@@ -25,7 +25,6 @@ do ->
       assert dy?
       @setXY @x+dx, @y+dy
     setXY: (@x, @y) ->
-      @event.trigger 'move', this
       return this
   class Velocity extends Position
 
@@ -60,36 +59,29 @@ do ->
 
   # Draw something at a position, updating it when moved.
   class Render
-    constructor: (@self, @svg, @sprite, @onMoveFn=->) ->
-      @self.position.event.bind 'move', => @onMove()
-      @onMove()
-    onMove: ->
-      #$(@sprite).css(left:@self.position.x+'px', top:@self.position.y+'px')
-      @sprite.setAttribute 'cx', @self.position.x
-      @sprite.setAttribute 'cy', @self.position.y
-      @sprite.setAttribute 'x', @self.position.x
-      @sprite.setAttribute 'y', @self.position.y
-      #@sprite.setAttribute 'transform', 'translate('+@self.position.x+','+@self.position.y+')'
-      @onMoveFn this
-    destroy: ->
-      @svg.remove @sprite
+    constructor: (@self, @g, @drawFn) ->
+    draw: ->
+      @drawFn @g
+      return this
 
   class Factory
-    constructor: (@svg, @sprite, @config) ->
+    constructor: (@g, @config) ->
     player: ->
       ret = {}
       ret.position = new Position ret, 320, 320
       ret.hitbox = new Hitbox ret, 10
-      ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
-        fill: 'blue'
+      ret.render = new Render ret, @g, ->
+        r = ret.hitbox.radius
+        @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
 
     boss: ->
       ret = {}
       ret.position = new Position ret, 320, 80
       ret.hitbox = new Hitbox ret, 20
-      ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
-        fill: 'red'
+      ret.render = new Render ret, @g, ->
+        r = ret.hitbox.radius
+        @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       ret.fullhealth = @config.boss.health
       ret.health = ret.fullhealth
       return ret
@@ -101,17 +93,18 @@ do ->
       speed = 2 + 3*Math.random()
       ret.velocity = new Velocity ret, speed*Math.cos(angle), speed*Math.sin(angle)
       ret.hitbox = new Hitbox ret, 5
-      dead = @svg.svg()
-      @svg.add dead, @sprite.deaddoll
-      ret.render = new Render ret, @svg, dead
+      ret.render = new Render ret, @g, ->
+        r = ret.hitbox.radius
+        @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
     bullet: (player) ->
       ret = {}
       ret.position = new Position ret, player.position.x, player.position.y
       ret.velocity = new Velocity ret, 0, -8
       ret.hitbox = new Hitbox ret, 3
-      ret.render = new Render ret, @svg, @svg.circle ret.position.x, ret.position.y, ret.hitbox.radius,
-        fill: 'blue'
+      ret.render = new Render ret, @g, ->
+        r = ret.hitbox.radius
+        @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
     dollmaker: (world) ->
       ret =
@@ -142,9 +135,10 @@ do ->
       return ret
 
   class World
-    constructor: (svg, sprites) ->
+    constructor: (@canvas) ->
       @config = {}
-      @factory = new Factory(svg, sprites, @config)
+      @g = canvas.getContext '2d'
+      @factory = new Factory(@g, @config)
       @player = @factory.player()
       @t = 0
       @bullets = []
@@ -165,8 +159,6 @@ do ->
 
     clearPlayer: (@lives=4) ->
       $('#lives').hide().text(@lives).fadeIn()
-      for b in @bullets
-        b.render.destroy()
       @bullets = []
 
       @vulnerable = @factory.cooldown this, 240
@@ -204,11 +196,7 @@ do ->
             shooting: 5 + Math.floor (stage-1)/7
       console.log 'hi', @stage, JSON.stringify @config
 
-      if @boss?
-        @boss.render.destroy()
       @boss = @factory.boss()
-      for d in @dolls
-        d.render.destroy()
       @dolls = []
 
       @dollmaker = @factory.dollmaker this
@@ -252,13 +240,9 @@ do ->
         bullet.position.addXY bullet.velocity.x, bullet.velocity.y
         # If it hits the boss, damage the boss and kill the bullet
         if bullet.hitbox.isCollision @boss.hitbox
-          bullet.render.destroy()
           @boss.health -= 1
-        # If it's left the playing field, kill it
-        else if bullet.position.y < 0
-          bullet.render.destroy()
-        # else, it stays in play
-        else
+        # If it's still in the playing field, keep it
+        else if bullet.position.y >= 0
           bs.push bullet
       @bullets = bs
       healthpct = Math.max 0, @boss.health/@boss.fullhealth
@@ -299,10 +283,20 @@ do ->
           doll.position.y = if doll.position.y < 0 then 0 else 480
           doll.velocity.y *= elasticity
 
+      # Draw everything
+      @g.clearRect 0, 0, 640, 480 #TODO dirty rects
+      for d in @dolls
+        d.render.draw()
+      for b in @bullets
+        b.render.draw()
+      @boss.render.draw()
+      @player.render.draw()
+
+      # Finally done
       @t += 1
 
-  onload = (svg, sprites) ->
-    world = new World(svg, sprites)
+  onload = (canvas) ->
+    world = new World canvas
     $(document).bind 'click.intro', ->
       $(document).unbind 'click.intro'
       $('#intro').fadeOut()
@@ -310,13 +304,4 @@ do ->
       world.start()
 
   jQuery ($)->
-    canvas = $('#content').svg onLoad: (svg) ->
-      $('#loader').svg loadURL:'sprite.svg', onLoad: (loader) ->
-        load = (id) ->
-          doc = assert $(loader.root()).find(id)[0], id
-          $(doc).removeAttr 'id'
-          return svg.toSVG doc
-        sprites =
-          deaddoll: load '#deaddoll'
-          livedoll: load '#livedoll'
-        onload svg, sprites
+    onload $('#content canvas')[0]
