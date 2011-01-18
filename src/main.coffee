@@ -134,7 +134,7 @@ do ->
         # spawn a few extra dolls right away
         val: @config.dollmaker.start * @config.dollmaker.max
         sprite:
-          fn: -> if world.shoot then @live else @dead
+          fn: -> if world.shooting() then @live else @dead
           live: assert $('#livedoll')[0], 'livedoll'
           dead: assert $('#deaddoll')[0], 'deaddoll'
         incr:
@@ -142,7 +142,7 @@ do ->
           shooting: @config.dollmaker.incr.shooting
         max: @config.dollmaker.max
         tick: ->
-          @val += if world.shoot then @incr.shooting else @incr.normal
+          @val += if world.shooting() then @incr.shooting else @incr.normal
           spawned = Math.floor @val / @max
           if spawned > 0
             @val -= spawned * @max
@@ -183,6 +183,8 @@ do ->
         @mouse.x = bound e.pageX - offset.left, rad, 640-rad
         @mouse.y = bound e.pageY - offset.top, rad, 480-rad
       @shoot = false
+    shooting: ->
+      return @shoot or @bullets.length > 0
 
     clearPlayer: (@lives=4) ->
       $('#lives').hide().text(@lives).fadeIn()
@@ -200,7 +202,7 @@ do ->
         doll:
           # Stage 1: velocity == 0, dolls don't chase. Speed up every
           # 3 stages after that (2, 5, 8...)
-          seekVelocity: 0 + 0.03 * Math.floor (@stage+1) / 3
+          seekVelocity: 0 + 0.022 * Math.floor (@stage+1) / 3
         boss:
           # Boss health increases a little every stage.
           health: 30 + @stage * 1
@@ -223,7 +225,7 @@ do ->
             # Spawn even faster while the player shoots, a little
             # faster every few rounds (7, 14, 21...)
             shooting: 50 + 10*((Math.floor (stage-1)/7) or 0)
-      console.log 'hi', @stage, JSON.stringify @config
+      console.log 'stage', @stage, JSON.stringify @config
 
       if @boss?
         @boss.render.destroy()
@@ -309,7 +311,7 @@ do ->
       @dollmaker.tick()
 
       for doll in @dolls
-        if @shoot
+        if @shooting()
           seekVelocity doll.velocity, doll.position, @config.doll.seekVelocity, @player.position
         doll.position.addXY doll.velocity.x, doll.velocity.y
         # bounce, and lose momentum.
