@@ -98,23 +98,24 @@ do ->
       ret.health = ret.fullhealth
       return ret
 
-    doll: (boss) ->
+    doll: (boss, spriteref) ->
       ret = {}
       ret.position = new Position ret, boss.position.x, boss.position.y
       angle = 2 * Math.PI * Math.random()
       speed = 2 + 3*Math.random()
       ret.velocity = new Velocity ret, speed*Math.cos(angle), speed*Math.sin(angle)
-      ret.hitbox = new Hitbox ret, 5
+      ret.hitbox = new Hitbox ret, 13
       ret.render = new Render ret, @g,
         clear: -> @clear ret.hitbox.radius
         draw: ->
-          r = ret.hitbox.radius
-          @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
+          @g.drawImage spriteref(), ret.position.x-30, ret.position.y-32
+          #r = ret.hitbox.radius
+          #@g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
-    bullet: (player) ->
+    bullet: (player, vx) ->
       ret = {}
       ret.position = new Position ret, player.position.x, player.position.y
-      ret.velocity = new Velocity ret, 0, -8
+      ret.velocity = new Velocity ret, vx, -8
       ret.hitbox = new Hitbox ret, 3
       ret.render = new Render ret, @g,
         clear: -> @clear ret.hitbox.radius
@@ -126,6 +127,10 @@ do ->
       ret =
         # spawn a few extra dolls right away
         val: @config.dollmaker.start * @config.dollmaker.max
+        sprite:
+          fn: -> if world.shoot then @live else @dead
+          live: assert $('#livedoll')[0], 'livedoll'
+          dead: assert $('#deaddoll')[0], 'deaddoll'
         incr:
           normal: @config.dollmaker.incr.normal
           shooting: @config.dollmaker.incr.shooting
@@ -137,7 +142,7 @@ do ->
             @val -= spawned * @max
             while spawned > 0
               spawned -= 1
-              world.dolls.push world.factory.doll world.boss
+              world.dolls.push world.factory.doll world.boss, => @sprite.fn()
             $('#count').hide().text(world.dolls.length).fadeIn()
       return ret
     cooldown: (world, cooldown) ->
@@ -205,13 +210,13 @@ do ->
           # a percentage faster every time, and high levels don't have
           # huge jumps relative to early levels, or have (for example)
           # level 100 spawn infinite dolls per frame.
-          max: Math.floor 333 * Math.pow 0.96, @stage-1
+          max: Math.floor 3333 * Math.pow 0.96, @stage-1
           incr:
             # Normal spawn rate is a baseline.
-            normal: 1
+            normal: 5
             # Spawn even faster while the player shoots, a little
             # faster every few rounds (7, 14, 21...)
-            shooting: 5 + ((Math.floor (stage-1)/7) or 0)
+            shooting: 50 + 10*((Math.floor (stage-1)/7) or 0)
       console.log 'hi', @stage, JSON.stringify @config
 
       if @boss?
@@ -255,7 +260,9 @@ do ->
       seek @player.position, 5, @mouse
       # player bullets
       if @shoot and @weapon.isReady()
-        @bullets.push @factory.bullet @player
+        @bullets.push @factory.bullet @player, -1
+        @bullets.push @factory.bullet @player, 0
+        @bullets.push @factory.bullet @player, 1
         @weapon.clear()
       bs = []
       for bullet in @bullets

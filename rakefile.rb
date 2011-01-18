@@ -28,6 +28,12 @@ task :inkscape do
   sh 'inkscape www/sprite.svg &'
 end
 
+desc 'render images'
+task :rasterize do
+  sh 'inkscape www/sprite.svg --export-png=www/lib/livedoll.png --export-id=livedoll --export-id-only'
+  sh 'inkscape www/sprite.svg --export-png=www/lib/deaddoll.png --export-id=deaddoll --export-id-only'
+end
+
 desc 'line count of sources'
 task :wc do
   sh 'wc -l `find src -type f`; wc -l `find test -type f`'

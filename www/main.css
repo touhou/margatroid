@@ -3,7 +3,7 @@ body {
     color: white;
     font-family:monospace;
 }
-#loader {
+#assets {
     display:none;
 }
 #content {
