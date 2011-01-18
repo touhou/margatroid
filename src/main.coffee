@@ -59,9 +59,17 @@ do ->
 
   # Draw something at a position, updating it when moved.
   class Render
-    constructor: (@self, @g, @drawFn) ->
+    constructor: (@self, @g, @fn) ->
+      @old = {}
+    clear: (r) ->
+      @g.clearRect @old.x-r-1, @old.y-r-1, 2*r+2,2*r+2
+    destroy: ->
+      #@fn.clear.call this
     draw: ->
-      @drawFn @g
+      #@fn.clear.call this
+      @fn.draw.call this
+      @old.x = @self.position.x
+      @old.y = @self.position.y
       return this
 
   class Factory
@@ -70,18 +78,22 @@ do ->
       ret = {}
       ret.position = new Position ret, 320, 320
       ret.hitbox = new Hitbox ret, 10
-      ret.render = new Render ret, @g, ->
-        r = ret.hitbox.radius
-        @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
+      ret.render = new Render ret, @g,
+        clear: -> @clear ret.hitbox.radius
+        draw: ->
+          r = ret.hitbox.radius
+          @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
 
     boss: ->
       ret = {}
       ret.position = new Position ret, 320, 80
       ret.hitbox = new Hitbox ret, 20
-      ret.render = new Render ret, @g, ->
-        r = ret.hitbox.radius
-        @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
+      ret.render = new Render ret, @g,
+        clear: -> @clear ret.hitbox.radius
+        draw: ->
+          r = ret.hitbox.radius
+          @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       ret.fullhealth = @config.boss.health
       ret.health = ret.fullhealth
       return ret
@@ -93,18 +105,22 @@ do ->
       speed = 2 + 3*Math.random()
       ret.velocity = new Velocity ret, speed*Math.cos(angle), speed*Math.sin(angle)
       ret.hitbox = new Hitbox ret, 5
-      ret.render = new Render ret, @g, ->
-        r = ret.hitbox.radius
-        @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
+      ret.render = new Render ret, @g,
+        clear: -> @clear ret.hitbox.radius
+        draw: ->
+          r = ret.hitbox.radius
+          @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
     bullet: (player) ->
       ret = {}
       ret.position = new Position ret, player.position.x, player.position.y
       ret.velocity = new Velocity ret, 0, -8
       ret.hitbox = new Hitbox ret, 3
-      ret.render = new Render ret, @g, ->
-        r = ret.hitbox.radius
-        @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
+      ret.render = new Render ret, @g,
+        clear: -> @clear ret.hitbox.radius
+        draw: ->
+          r = ret.hitbox.radius
+          @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
     dollmaker: (world) ->
       ret =
@@ -159,6 +175,8 @@ do ->
 
     clearPlayer: (@lives=4) ->
       $('#lives').hide().text(@lives).fadeIn()
+      for b in @bullets
+        b.render.destroy()
       @bullets = []
 
       @vulnerable = @factory.cooldown this, 240
@@ -193,10 +211,14 @@ do ->
             normal: 1
             # Spawn even faster while the player shoots, a little
             # faster every few rounds (7, 14, 21...)
-            shooting: 5 + Math.floor (stage-1)/7
+            shooting: 5 + ((Math.floor (stage-1)/7) or 0)
       console.log 'hi', @stage, JSON.stringify @config
 
+      if @boss?
+        @boss.render.destroy()
       @boss = @factory.boss()
+      for d in @dolls
+        d.render.destroy()
       @dolls = []
 
       @dollmaker = @factory.dollmaker this
@@ -241,14 +263,18 @@ do ->
         # If it hits the boss, damage the boss and kill the bullet
         if bullet.hitbox.isCollision @boss.hitbox
           @boss.health -= 1
+          bullet.render.destroy()
         # If it's still in the playing field, keep it
-        else if bullet.position.y >= 0
+        else if bullet.position.y < 0
+          bullet.render.destroy()
+        else
           bs.push bullet
       @bullets = bs
       healthpct = Math.max 0, @boss.health/@boss.fullhealth
       $('#healthgone').css(width:(100 * (1 - healthpct))+'%')
       # boss death
       if healthpct == 0
+        @boss.render.destroy()
         # extra lives for beating stages
         if @stage == 1 or @stage % 3 == 0
           @lives += 1
