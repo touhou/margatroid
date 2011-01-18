@@ -88,12 +88,14 @@ do ->
     boss: ->
       ret = {}
       ret.position = new Position ret, 320, 80
-      ret.hitbox = new Hitbox ret, 20
+      ret.hitbox = new Hitbox ret, 25
+      sprite = assert $('#alice')[0]
       ret.render = new Render ret, @g,
         clear: -> @clear ret.hitbox.radius
         draw: ->
-          r = ret.hitbox.radius
-          @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
+          @g.drawImage sprite, ret.position.x-45, ret.position.y-50
+          #r = ret.hitbox.radius
+          #@g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       ret.fullhealth = @config.boss.health
       ret.health = ret.fullhealth
       return ret

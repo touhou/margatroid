@@ -33,6 +33,7 @@ task :rasterize do
   sh 'inkscape www/sprite.svg --export-png=www/lib/livedoll.png --export-id=livedoll --export-id-only'
   sh 'inkscape www/sprite.svg --export-png=www/lib/deaddoll.png --export-id=deaddoll --export-id-only'
   sh 'inkscape www/sprite.svg --export-png=www/lib/bullet.png --export-id=bullet --export-id-only'
+  sh 'inkscape www/sprite.svg --export-png=www/lib/alice.png --export-id=alice --export-id-only'
 end
 
 desc 'line count of sources'
