@@ -117,11 +117,13 @@ do ->
       ret.position = new Position ret, player.position.x, player.position.y
       ret.velocity = new Velocity ret, vx, -8
       ret.hitbox = new Hitbox ret, 3
+      sprite = assert $('#bullet')[0]
       ret.render = new Render ret, @g,
         clear: -> @clear ret.hitbox.radius
         draw: ->
-          r = ret.hitbox.radius
-          @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
+          @g.drawImage sprite, ret.position.x-12, ret.position.y-12
+          #r = ret.hitbox.radius
+          #@g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
     dollmaker: (world) ->
       ret =
