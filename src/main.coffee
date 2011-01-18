@@ -78,11 +78,13 @@ do ->
       ret = {}
       ret.position = new Position ret, 320, 320
       ret.hitbox = new Hitbox ret, 10
+      sprite = assert $('#reimu')[0]
       ret.render = new Render ret, @g,
         clear: -> @clear ret.hitbox.radius
         draw: ->
-          r = ret.hitbox.radius
-          @g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
+          @g.drawImage sprite, ret.position.x-33, ret.position.y-32
+          #r = ret.hitbox.radius
+          #@g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
 
     boss: ->
@@ -201,7 +203,7 @@ do ->
           seekVelocity: 0 + 0.03 * Math.floor (@stage+1) / 3
         boss:
           # Boss health increases a little every stage.
-          health: 30 + @stage * 2
+          health: 30 + @stage * 1
           # Boss speed increases a little every stage. This is also a
           # nice hack to make the boss spawn at a 'different' location
           # when killed, without bothering with randomness.
