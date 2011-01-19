@@ -13,7 +13,7 @@ do ->
       src = assert $('audio.'+id)[0], 'audio.'+id
       # don't spam the same sound
       diff = now - (@played[src.src] ? 0)
-      if diff < 500
+      if diff < 333
         return
       @played[src.src] = now
       # Create a new one to allow multiple plays at once
@@ -296,7 +296,7 @@ do ->
         if bullet.hitbox.isCollision @boss.hitbox
           @boss.health -= 1
           bullet.render.destroy()
-          sfx.play 'shot-hit'
+          sfx.play 'hurt'
         # If it's still in the playing field, keep it
         else if bullet.position.y < 0
           bullet.render.destroy()
@@ -313,6 +313,7 @@ do ->
         if @stage == 1 or @stage % 3 == 0
           @lives += 1
           $('#lives').hide().text(@lives).fadeIn()
+          sfx.play 'extend'
         @clearFoes @stage+1
 
       # player death
