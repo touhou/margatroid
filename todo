@@ -1,28 +1,12 @@
-- sfx
--- shoot
--- shots-hit
--- boss respawn
--- boss death
--- player death
--- 1up
--- lose
--- win
 - music
 -- separate music for living-dolls vs nonliving-dolls?
-- rasterize graphics, convert to canvas; svg's too slow for even this!
 - graphics
--- background
---- living
---- nonliving
--- player (reimu?)
--- dolls
---- living
---- nonliving
--- alice
 -- player-death effect
 -- boss-death effect
 -- visible invincibility
-- render with svg, not circles
-- save replays
+-- dolls' angle random while dead, after wall-bounce
+-- dolls face you while alive
 - delay between stages
 - delay after player-death/before respawn
+
+* save replays

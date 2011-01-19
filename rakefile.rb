@@ -31,6 +31,7 @@ end
 desc 'render assets'
 task :assets => [:rasterize,:sfx]
 
+# made with sfxr
 task :sfx => ['www/lib'] do
   sh 'cd assets && oggenc *.wav'
   sh 'cp assets/*.ogg www/lib/'

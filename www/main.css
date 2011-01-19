@@ -15,6 +15,7 @@ body {
     color:blue;
 }
 #content, #paused, #intro, #gameover, #living,#nonliving {
+    -moz-border-radius:10px;
     border-radius:10px;
 }
 
@@ -37,9 +38,10 @@ canvas {
 #fullhealth {
     background: red;
     background: -webkit-gradient(linear, left top, right top, from(#b00), to(#f44));
-    background: -moz-linear-gradient(left, #b00,f44);
+    background: -moz-linear-gradient(left, #b00,#f44);
 
     border:1px solid #800;
+    -moz-border-radius:10px;
     border-radius:10px;
     width:640px;
     height:1em;

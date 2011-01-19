@@ -8,9 +8,11 @@ do ->
   sfx =
     played: {}
     playingTotal: 0
+    load: (id) ->
+      assert $('audio.'+id)[0], 'audio.'+id
     play: (id) ->
       now = new Date().getTime()
-      src = assert $('audio.'+id)[0], 'audio.'+id
+      src = @load id
       # don't spam the same sound
       diff = now - (@played[src.src] ? 0)
       if diff < 333
@@ -19,6 +21,12 @@ do ->
       # Create a new one to allow multiple plays at once
       a = new Audio src.src
       a.play()
+  bgm =
+    load: sfx.load
+    play: (id) ->
+      src = @load id
+      src.loop = true
+      src.play()
 
   # 2D coordinates
   class Position
@@ -363,6 +371,7 @@ do ->
     world = new World canvas
     $(document).bind 'click.intro', ->
       sfx.play 'start'
+      sfx.play 'bgm'
       $(document).unbind 'click.intro'
       $('#intro').fadeOut()
       setInterval (->world.tick()), 16
