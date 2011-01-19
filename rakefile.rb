@@ -28,13 +28,19 @@ task :inkscape do
   sh 'inkscape www/sprite.svg &'
 end
 
-desc 'render images'
-task :rasterize do
-  sh 'inkscape www/sprite.svg --export-png=www/lib/livedoll.png --export-id=livedoll --export-id-only'
-  sh 'inkscape www/sprite.svg --export-png=www/lib/deaddoll.png --export-id=deaddoll --export-id-only'
-  sh 'inkscape www/sprite.svg --export-png=www/lib/bullet.png --export-id=bullet --export-id-only'
-  sh 'inkscape www/sprite.svg --export-png=www/lib/alice.png --export-id=alice --export-id-only'
-  sh 'inkscape www/sprite.svg --export-png=www/lib/reimu.png --export-id=reimu --export-id-only'
+desc 'render assets'
+task :assets => [:rasterize,:sfx]
+
+task :sfx => ['www/lib'] do
+  sh 'cp assets/*.ogg www/lib/'
+end
+
+task :rasterize => ['www/lib'] do
+  sh 'inkscape assets/sprite.svg --export-png=www/lib/livedoll.png --export-id=livedoll --export-id-only'
+  sh 'inkscape assets/sprite.svg --export-png=www/lib/deaddoll.png --export-id=deaddoll --export-id-only'
+  sh 'inkscape assets/sprite.svg --export-png=www/lib/bullet.png --export-id=bullet --export-id-only'
+  sh 'inkscape assets/sprite.svg --export-png=www/lib/alice.png --export-id=alice --export-id-only'
+  sh 'inkscape assets/sprite.svg --export-png=www/lib/reimu.png --export-id=reimu --export-id-only'
 end
 
 desc 'line count of sources'

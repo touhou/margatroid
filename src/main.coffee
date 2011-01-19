@@ -5,6 +5,21 @@ do ->
     unless val then throw new Error msg ? ''+val
     return val
 
+  sfx =
+    played: {}
+    playingTotal: 0
+    play: (id) ->
+      now = new Date().getTime()
+      src = assert $('audio.'+id)[0], 'audio.'+id
+      # don't spam the same sound
+      diff = now - (@played[src.src] ? 0)
+      if diff < 500
+        return
+      @played[src.src] = now
+      # Create a new one to allow multiple plays at once
+      a = new Audio src.src
+      a.play()
+
   # 2D coordinates
   class Position
     constructor: (@self, @x, @y) ->
@@ -209,7 +224,7 @@ do ->
           # Boss speed increases a little every stage. This is also a
           # nice hack to make the boss spawn at a 'different' location
           # when killed, without bothering with randomness.
-          speed: (4 + @stage) / 240 / 7
+          speed: (50 + 4*@stage) / 240 / 70
         dollmaker:
           # Start out with 4 dolls per turn. From stage 3 (5 dolls),
           # increase starting dolls by 1 per 5 rounds (3, 8, 13...)
@@ -239,6 +254,7 @@ do ->
     start: ->
       $(document).bind 'keydown.pause', (e) =>
         if e.which == 27 # esc
+          sfx.play 'pause'
           @paused = not @paused
           if @paused
             $('#paused').fadeIn()
@@ -272,6 +288,7 @@ do ->
         @bullets.push @factory.bullet @player, 0
         @bullets.push @factory.bullet @player, 1
         @weapon.clear()
+        sfx.play 'shoot'
       bs = []
       for bullet in @bullets
         bullet.position.addXY bullet.velocity.x, bullet.velocity.y
@@ -279,6 +296,7 @@ do ->
         if bullet.hitbox.isCollision @boss.hitbox
           @boss.health -= 1
           bullet.render.destroy()
+          sfx.play 'shot-hit'
         # If it's still in the playing field, keep it
         else if bullet.position.y < 0
           bullet.render.destroy()
@@ -289,6 +307,7 @@ do ->
       $('#healthgone').css(width:(100 * (1 - healthpct))+'%')
       # boss death
       if healthpct == 0
+        sfx.play 'boss-death'
         @boss.render.destroy()
         # extra lives for beating stages
         if @stage == 1 or @stage % 3 == 0
@@ -305,7 +324,10 @@ do ->
           @vulnerable.clear()
           @player.position.setXY 320, 320
           if @lives < 0
+            sfx.play 'gameover'
             @gameover()
+          else
+            sfx.play 'player-death'
 
       @boss.position.setXY (320 + 240 * Math.sin @t*Math.PI*@config.boss.speed), @boss.position.y
       @dollmaker.tick()
@@ -339,6 +361,7 @@ do ->
   onload = (canvas) ->
     world = new World canvas
     $(document).bind 'click.intro', ->
+      sfx.play 'start'
       $(document).unbind 'click.intro'
       $('#intro').fadeOut()
       setInterval (->world.tick()), 16
