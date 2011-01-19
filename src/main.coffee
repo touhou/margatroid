@@ -25,7 +25,11 @@ do ->
     load: sfx.load
     play: (id) ->
       src = @load id
-      src.loop = true
+      # http://forestmist.org/2010/04/html5-audio-loops/
+      #src.loop = true
+      $(src).unbind('ended.bgm').bind 'ended.bgm', ->
+        console.log 'loop'
+        this.currentTime = 0
       src.play()
 
   # 2D coordinates
@@ -371,7 +375,7 @@ do ->
     world = new World canvas
     $(document).bind 'click.intro', ->
       sfx.play 'start'
-      sfx.play 'bgm'
+      bgm.play 'bgm'
       $(document).unbind 'click.intro'
       $('#intro').fadeOut()
       setInterval (->world.tick()), 16
