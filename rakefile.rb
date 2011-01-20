@@ -18,6 +18,14 @@ task :watch => [:deps,'www/lib'] do
   sh 'coffee -w -o www/lib -c src test'
 end
 
+# http://www.trottercashion.com/2010/10/29/replacing-make-with-rake.html
+WAVS = FileList['assets/*.wav']
+OGGS = WAVS.ext('.ogg')
+task :sfx => OGGS
+rule '.ogg' => '.wav' do |t|
+  sh "oggenc #{t.source}"
+end
+
 desc 'run emacs for devel'
 task :emacs do
   sh 'emacs todo `find www/ -type f -and \( -name "*.html" -o -name "*.css" \)` `find src test -type f` &'
@@ -33,7 +41,6 @@ task :assets => [:rasterize,:sfx]
 
 # made with sfxr
 task :sfx => ['www/lib'] do
-  sh 'cd assets && oggenc *.wav'
   sh 'cp assets/*.ogg www/lib/'
 end
 
