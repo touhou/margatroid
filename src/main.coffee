@@ -23,14 +23,22 @@ do ->
       a.play()
   bgm =
     load: sfx.load
+    playing: null
+    init: (mainid, ids...) ->
+      for id in ids
+        @play id
+      @play mainid
     play: (id) ->
-      src = @load id
+      if @playing?
+        @playing.volume = 0
+      @playing = @load id
+      @playing.volume = 1
       # http://forestmist.org/2010/04/html5-audio-loops/
       #src.loop = true
-      $(src).unbind('ended.bgm').bind 'ended.bgm', ->
+      $(@playing).unbind('ended.bgm').bind 'ended.bgm', ->
         console.log 'loop'
-        this.currentTime = 0
-      src.play()
+        @currentTime = 0
+      @playing.play()
 
   # 2D coordinates
   class Position
@@ -275,12 +283,14 @@ do ->
       $('#content').mousedown (e) =>
         if @paused then return
         @shoot = true
+        bgm.play 'bgm-live'
         $('#living').fadeIn('fast')
         $('#nonliving').fadeOut('fast')
         return false
       $('#content').mouseup (e) =>
         if @paused then return
         @shoot = false
+        bgm.play 'bgm-dead'
         $('#living, #nonliving').stop(true,true)
         $('#living').fadeOut('fast')
         $('#nonliving').fadeIn('fast')
@@ -375,7 +385,7 @@ do ->
     world = new World canvas
     $(document).bind 'click.intro', ->
       sfx.play 'start'
-      bgm.play 'bgm'
+      bgm.init 'bgm-dead', 'bgm-live'
       $(document).unbind 'click.intro'
       $('#intro').fadeOut()
       setInterval (->world.tick()), 16
