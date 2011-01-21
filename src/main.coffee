@@ -200,7 +200,7 @@ do ->
         tick: ->
           @val += if world.shooting() then @incr.shooting else @incr.normal
           spawned = Math.floor @val / @max
-          if spawned > 0
+          if spawned > 0 and world.boss.health > 0
             @val -= spawned * @max
             while spawned > 0
               spawned -= 1
@@ -219,6 +219,22 @@ do ->
       ret.clear()
       return ret
 
+  class Schedule
+    constructor: ->
+      @t = 0
+      @events = {}
+    at: (t, event) ->
+      @events[t] ?= []
+      @events[t].push event
+    delay: (delay, event) ->
+      @at @t+delay, event
+    tick: ->
+      @t += 1
+      events = @events[@t] ? []
+      delete @events[@t]
+      for e in events
+        e()
+      return this
   class World
     constructor: (@canvas) ->
       @config = {}
@@ -228,6 +244,7 @@ do ->
       @weapon = @factory.cooldown this, 5
       @player = @factory.player @vulnerable
       @t = 0
+      @schedule = new Schedule()
       @bullets = []
       @dolls = []
 
@@ -255,6 +272,11 @@ do ->
       @weapon.clear()
 
       @paused = false
+
+    clearDolls: ->
+      for d in @dolls
+        d.render.destroy()
+      @dolls = []
 
     clearFoes: (@stage=1) ->
       $('#stage').hide().text(@stage).fadeIn()
@@ -289,10 +311,8 @@ do ->
 
       if @boss?
         @boss.render.destroy()
+      @clearDolls()
       @boss = @factory.boss()
-      for d in @dolls
-        d.render.destroy()
-      @dolls = []
 
       @dollmaker = @factory.dollmaker this
 
@@ -327,41 +347,56 @@ do ->
 
     tick: ->
       if @paused then return
+
+      # Scheduled events
+      #
+      # (Really, we should rewrite this huge tick method so everything
+      # is a scheduled/interval event. But on other projects, I've
+      # been too much of an architecture- astronaut... let's just get
+      # something working this time, dammit.)
+      @schedule.tick()
+
       # player movement
       seek @player.position, 5, @mouse
-      # player bullets
+      # player bullets: create
       if @shoot and @weapon.isReady()
         @bullets.push @factory.bullet @player, -1
         @bullets.push @factory.bullet @player, 0
         @bullets.push @factory.bullet @player, 1
         @weapon.clear()
         sfx.play 'shoot'
-      bs = []
+      # player bullets: move
       for bullet in @bullets
         bullet.position.addXY bullet.velocity.x, bullet.velocity.y
-        # If it hits the boss, damage the boss and kill the bullet
-        if bullet.hitbox.isCollision @boss.hitbox
-          @boss.health -= 1
-          bullet.render.destroy()
-          sfx.play 'hurt'
-        # If it's still in the playing field, keep it
-        else if bullet.position.y < 0
-          bullet.render.destroy()
-        else
-          bs.push bullet
-      @bullets = bs
-      healthpct = Math.max 0, @boss.health/@boss.fullhealth
-      $('#healthgone').css(width:(100 * (1 - healthpct))+'%')
-      # boss death
-      if healthpct == 0
-        sfx.play 'boss-death'
-        @boss.render.destroy()
-        # extra lives for beating stages
-        if @stage == 1 or @stage % 3 == 0
-          @lives += 1
-          $('#lives').hide().text(@lives).fadeIn()
-          sfx.play 'extend'
-        @clearFoes @stage+1
+      # player bullets: collide, remove
+      if @boss.health > 0
+        bs = []
+        for bullet in @bullets
+          # If it hits the boss, damage the boss and kill the bullet
+          if bullet.hitbox.isCollision @boss.hitbox
+            @boss.health -= 1
+            bullet.render.destroy()
+            sfx.play 'hurt'
+          # If it's still in the playing field, keep it
+          else if bullet.position.y < 0
+            bullet.render.destroy()
+          else
+            bs.push bullet
+        @bullets = bs
+        healthpct = Math.max 0, @boss.health/@boss.fullhealth
+        $('#healthgone').css(width:(100 * (1 - healthpct))+'%')
+        # boss death
+        if healthpct == 0
+          sfx.play 'boss-death'
+          @boss.render.destroy()
+          # extra lives for beating stages
+          if @stage == 1 or @stage % 3 == 0
+            @lives += 1
+            $('#lives').hide().text(@lives).fadeIn()
+            sfx.play 'extend'
+          @clearDolls()
+          @schedule.delay 60, =>
+            @clearFoes @stage+1
 
       # player death
       if @vulnerable.isReady()
@@ -400,7 +435,8 @@ do ->
         d.render.draw()
       for b in @bullets
         b.render.draw()
-      @boss.render.draw()
+      if @boss.health > 0
+        @boss.render.draw()
       @player.render.draw()
 
       # Finally done

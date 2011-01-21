@@ -2,8 +2,7 @@
 - graphics/effects
 -- player-death effect
 -- boss-death effect
-- delay between stages
-- delay after player-death/before respawn
+--- doll-death effect
 
 * save replays
 
