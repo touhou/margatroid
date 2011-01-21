@@ -51,7 +51,7 @@ end
 
 desc 'graphics editing'
 task :inkscape do
-  sh 'inkscape www/sprite.svg &'
+  sh 'inkscape assets/sprite.svg &'
 end
 
 task :assets => [:rasterize,:sfx]
@@ -62,7 +62,7 @@ task :sfx => ['www/lib'] do
 end
 
 task :rasterize => ['www/lib']
-SPRITES = %w(livedoll deaddoll bullet alice reimu)
+SPRITES = %w(livedoll deaddoll bullet alice reimu grimoire)
 SPRITES.each do |id|
   png = "www/lib/#{id}.png"
   task :rasterize => png
