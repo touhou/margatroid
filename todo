@@ -1,6 +1,8 @@
-- music
--- separate music for living-dolls vs nonliving-dolls?
-- graphics
+- favicon
+- deployment
+- loading-screen
+- better music
+- graphics/effects
 -- player-death effect
 -- boss-death effect
 -- visible invincibility
