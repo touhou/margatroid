@@ -22,11 +22,15 @@ task :watch => [:deps,'www/lib'] do
   sh 'coffee -w -o www/lib -c src test'
 end
 
-desc 'build production distribution. TODO: pack, gzip'
 task :mkDist => [:build, 'dist'] do
   sh 'rsync -auvL --delete www/ dist/www/'
+  # NFS doesn't have mod_gzip. See www/.htaccess for the rewrite that tells it to use .gz files
+  FileList['dist/www/**/*.{js,html,css}'].each do |f|
+    sh "gzip --stdout #{f} > #{f}.gz"
+  end
 end
 
+desc 'deploy'
 task :deployProd => :mkDist do
   account = ENV['NFS_ACCOUNT_NAME']
   sh "rsync -auvL --delete dist/www/ #{account}_touhou@ssh.phx.nearlyfreespeech.net:margatroid/"

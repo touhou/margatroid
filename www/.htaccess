@@ -3,3 +3,16 @@ RewriteEngine on
 RewriteCond %{HTTP:Accept-Encoding} gzip
 RewriteCond %{REQUEST_FILENAME}.gz -f
 RewriteRule ^(.*)$ $1.gz [L]
+# for index.html too
+RewriteCond %{HTTP:Accept-Encoding} gzip
+RewriteCond /margatroid/index.html.gz -f
+RewriteRule ^/margatroid/$ /margatroid/index.html.gz [L]
+
+<FilesMatch "\.(ico|png|ogg)$">
+  Header set Cache-Control "max-age=999999999, public"
+</FilesMatch>
+<ifModule mod_expires.c>
+  ExpiresActive On
+  # This is okay because etags will refresh it
+  ExpiresDefault "access plus 1 year"
+</ifModule>
