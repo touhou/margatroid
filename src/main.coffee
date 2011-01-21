@@ -21,24 +21,27 @@ do ->
       # Create a new one to allow multiple plays at once
       a = new Audio src.src
       a.play()
+  # Keep several possible background musics in sync. Assumes they're
+  # the same length, and done loading.
   bgm =
     load: sfx.load
     playing: null
-    init: (mainid, ids...) ->
+    init: (ids...) ->
       for id in ids
-        @play id
-      @play mainid
-    play: (id) ->
-      if @playing?
-        @playing.volume = 0
-      @playing = @load id
+        bgm = @load id
+        bgm.volume = 0
+        $(bgm).bind 'ended.bgm', ->
+          console.log 'loop', this
+          @currentTime = 0
+        bgm.play()
+      @playing = @load ids[0]
       @playing.volume = 1
-      # http://forestmist.org/2010/04/html5-audio-loops/
-      #src.loop = true
-      $(@playing).unbind('ended.bgm').bind 'ended.bgm', ->
-        console.log 'loop'
-        @currentTime = 0
-      @playing.play()
+    play: (id) ->
+      bgm = @load id
+      if @playing != bgm
+        @playing.volume = 0
+        @playing = bgm
+        @playing.volume = 1
 
   # 2D coordinates
   class Position
@@ -382,6 +385,7 @@ do ->
       @t += 1
 
   onload = ->
+    console.log 'initializing'
     $('#loading').fadeOut('fast')
     $('#intro').fadeIn('fast')
     canvas = assert $('#content canvas')[0]
@@ -398,6 +402,28 @@ do ->
   jQuery ($)->
     #$(document).ready ->
     #  alert 'document.ready'
-    # all resources loaded: images, audio
-    # Waiting for this is important: else, music will be out of sync
-    $(window).load onload
+    loading =
+      bgm: $('#assets audio.bgm').length
+      bgmloaded: {}
+      win: true #this breaks opera, and usually finishes first anyway
+      done: false
+      tryload: ->
+        if @bgm == 0 and @win and not @done
+          @done = true
+          onload()
+    # window.onload waits for images, but not audio. Wait for audio.
+    # firefox won't fire canplaythrough, chrome won't fire suspend
+    loadAudio = ->
+      unless loading.bgmloaded[@src]?
+        loading.bgmloaded[@src] = true
+        console.log 'audio loaded', this
+        loading.bgm -= 1
+        loading.tryload()
+    $('#assets audio.bgm').bind
+      suspend: loadAudio
+      canplaythrough: loadAudio
+
+    #$(window).load ->
+    #  console.log 'window loaded'
+    #  loading.win = true
+    #  loading.tryload()
