@@ -30,9 +30,12 @@ do ->
       for id in ids
         bgm = @load id
         bgm.volume = 0
-        $(bgm).bind 'ended.bgm', ->
-          console.log 'loop', this
-          @currentTime = 0
+        $(bgm).bind 'ended.bgm', =>
+          console.log 'loop'#, this
+          #@currentTime = 0
+          # Shouldn't have to do this, but it syncs a little better this way
+          for syncid in ids
+            @load(syncid).currentTime = 0
         bgm.play()
       @playing = @load ids[0]
       @playing.volume = 1
@@ -140,17 +143,28 @@ do ->
       ret.health = ret.fullhealth
       return ret
 
-    doll: (boss, spriteref) ->
+    doll: (target, boss, spriteref, alive) ->
       ret = {}
       ret.position = new Position ret, boss.position.x, boss.position.y
       angle = 2 * Math.PI * Math.random()
       speed = 2 + 3*Math.random()
       ret.velocity = new Velocity ret, speed*Math.cos(angle), speed*Math.sin(angle)
       ret.hitbox = new Hitbox ret, 13
+      deadangle = Math.random() * Math.PI * 2
       ret.render = new Render ret, @g,
         clear: -> @clear ret.hitbox.radius
         draw: ->
-          @g.drawImage spriteref(), ret.position.x-30, ret.position.y-32
+          @g.save()
+          @g.translate ret.position.x, ret.position.y
+          if alive()
+            if target.x < ret.position.x
+              @g.scale -1, 1
+            @g.rotate Math.asin target.trig(ret.position).sin
+          else
+            @g.rotate deadangle
+          @g.translate -30, -32
+          @g.drawImage spriteref(), 0, 0
+          @g.restore()
           #r = ret.hitbox.radius
           #@g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
@@ -186,7 +200,7 @@ do ->
             @val -= spawned * @max
             while spawned > 0
               spawned -= 1
-              world.dolls.push world.factory.doll world.boss, => @sprite.fn()
+              world.dolls.push world.factory.doll world.player.position, world.boss, (=> @sprite.fn()), (=>world.shooting())
             $('#count').hide().text(world.dolls.length).fadeIn()
       return ret
     cooldown: (world, cooldown) ->
