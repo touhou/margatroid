@@ -439,6 +439,17 @@ do ->
         @boss.render.draw()
       @player.render.draw()
 
+      # Draw timer
+      sec = Math.floor @t / 60
+      min = (Math.floor sec / 60).toString()
+      sec = (sec % 60).toString()
+      fr = (@t % 60).toString()
+      while sec.length < 2
+        sec = '0' + sec
+      while fr.length < 2
+        fr = '0' + fr
+      $('#status #time').text [min,sec,fr].join ':'
+
       # Finally done
       @t += 1
 
