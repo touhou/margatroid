@@ -115,7 +115,7 @@ do ->
 
   class Factory
     constructor: (@g, @config) ->
-    player: ->
+    player: (vulnerable) ->
       ret = {}
       ret.position = new Position ret, 320, 320
       ret.hitbox = new Hitbox ret, 10
@@ -123,7 +123,11 @@ do ->
       ret.render = new Render ret, @g,
         clear: -> @clear ret.hitbox.radius
         draw: ->
+          @g.save()
+          unless vulnerable.isReady() #invincible
+            @g.globalAlpha = 0.60 + 0.40*Math.cos(Math.PI*vulnerable.untilReady()/6)
           @g.drawImage sprite, ret.position.x-33, ret.position.y-32
+          @g.restore()
           #r = ret.hitbox.radius
           #@g.fillRect ret.position.x-r, ret.position.y-r, 2*r, 2*r
       return ret
@@ -208,6 +212,8 @@ do ->
         cooldown: cooldown
         isReady: ->
           return world.t >= @until
+        untilReady: ->
+          return Math.max 0, @until - world.t
         clear: ->
           @until = world.t + @cooldown
       ret.clear()
@@ -218,7 +224,9 @@ do ->
       @config = {}
       @g = canvas.getContext '2d'
       @factory = new Factory(@g, @config)
-      @player = @factory.player()
+      @vulnerable = @factory.cooldown this, 180
+      @weapon = @factory.cooldown this, 5
+      @player = @factory.player @vulnerable
       @t = 0
       @bullets = []
       @dolls = []
@@ -243,9 +251,9 @@ do ->
       for b in @bullets
         b.render.destroy()
       @bullets = []
+      @vulnerable.clear()
+      @weapon.clear()
 
-      @vulnerable = @factory.cooldown this, 240
-      @weapon = @factory.cooldown this, 5
       @paused = false
 
     clearFoes: (@stage=1) ->

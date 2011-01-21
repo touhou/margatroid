@@ -1,11 +1,7 @@
-- favicon
 - better music
 - graphics/effects
 -- player-death effect
 -- boss-death effect
--- visible invincibility
--- dolls' angle random while dead, after wall-bounce
--- dolls face you while alive
 - delay between stages
 - delay after player-death/before respawn
 
