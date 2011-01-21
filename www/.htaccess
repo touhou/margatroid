@@ -8,6 +8,9 @@ RewriteCond %{HTTP:Accept-Encoding} gzip
 RewriteCond /margatroid/index.html.gz -f
 RewriteRule ^/margatroid/$ /margatroid/index.html.gz [L]
 
+# http://www.askapache.com/htaccess/setting-charset-in-htaccess.html
+AddDefaultCharset UTF-8
+
 <FilesMatch "\.(ico|png|ogg)$">
   Header set Cache-Control "max-age=999999999, public"
 </FilesMatch>

@@ -13,7 +13,7 @@ task :deps => ['www/lib'] do
   end
 end
 
-task :build => [:deps,:rasterize,:sfx] do
+task :build => [:deps,:assets] do
   sh 'coffee -o www/lib -c src test'
 end
 
@@ -54,7 +54,6 @@ task :inkscape do
   sh 'inkscape www/sprite.svg &'
 end
 
-desc 'render assets'
 task :assets => [:rasterize,:sfx]
 
 # made with sfxr
@@ -71,6 +70,12 @@ SPRITES.each do |id|
     sh "inkscape assets/sprite.svg --export-png=#{png} --export-id=#{id} --export-id-only"
   end
 end
+
+# from http://ajaxload.info/
+file 'www/lib/ajax-loader.gif' => ['assets/ajax-loader.gif'] do |t|
+  sh "cp #{t.prerequisites} #{t.name}"
+end
+task :assets => [:sfx, :rasterize, 'www/lib/ajax-loader.gif']
 
 desc 'line count of sources'
 task :wc do

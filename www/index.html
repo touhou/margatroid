@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Margatroid</title>
+    <meta charset="UTF-8" />
     <link rel="stylesheet" href="main.css" />
     <script src="lib/underscore.js"></script>
     <script src="lib/jquery.js"></script>
@@ -9,16 +10,16 @@
   </head>
   <body>
     <div id="assets">
-      <audio class="bgm-live" src="lib/bgm-live.ogg" />
-      <audio class="bgm-dead" src="lib/bgm-dead.ogg" />
+      <audio class="bgm-live" src="lib/bgm-live.ogg"></audio>
+      <audio class="bgm-dead" src="lib/bgm-dead.ogg"></audio>
 
-      <audio class="gameover" src="lib/gameover.ogg" />
-      <audio class="pause" src="lib/pause.ogg" />
-      <audio class="boss-death" src="lib/boss-death.ogg" />
-      <audio class="player-death" src="lib/player-death.ogg" />
-      <audio class="start extend" src="lib/extend.ogg" />
-      <audio class="shoot" src="lib/shoot.ogg" />
-      <audio class="hurt" src="lib/hurt.ogg" />
+      <audio class="gameover" src="lib/gameover.ogg"></audio>
+      <audio class="pause" src="lib/pause.ogg"></audio>
+      <audio class="boss-death" src="lib/boss-death.ogg"></audio>
+      <audio class="player-death" src="lib/player-death.ogg"></audio>
+      <audio class="start extend" src="lib/extend.ogg"></audio>
+      <audio class="shoot" src="lib/shoot.ogg"></audio>
+      <audio class="hurt" src="lib/hurt.ogg"></audio>
 
       <img id="livedoll" src="lib/livedoll.png" />
       <img id="deaddoll" src="lib/deaddoll.png" />
@@ -33,7 +34,15 @@
         Couldn't draw the game. Try visiting this page
         with <a href="http://google.com/chrome">Google Chrome</a>.
       </canvas>
-      <div id="intro">
+      <div id="loading">
+        <h1>Margatroid</h1>
+        <p>Click to shoot the doll-maker</p>
+        <p>Beware the dolls</p>
+        <img src="lib/ajax-loader.gif"
+             alt="Loading... please wait warmly."
+             title="Loading... please wait warmly." />
+      </div>
+      <div id="intro" style="display:none">
         <h1>Margatroid</h1>
         <p>Click to shoot the doll-maker</p>
         <p>Beware the dolls</p>

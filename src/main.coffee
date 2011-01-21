@@ -381,7 +381,10 @@ do ->
       # Finally done
       @t += 1
 
-  onload = (canvas) ->
+  onload = ->
+    $('#loading').fadeOut('fast')
+    $('#intro').fadeIn('fast')
+    canvas = assert $('#content canvas')[0]
     world = new World canvas
     $(document).bind 'click.intro', ->
       sfx.play 'start'
@@ -391,5 +394,10 @@ do ->
       setInterval (->world.tick()), 16
       world.start()
 
+  # page/dom load
   jQuery ($)->
-    onload $('#content canvas')[0]
+    #$(document).ready ->
+    #  alert 'document.ready'
+    # all resources loaded: images, audio
+    # Waiting for this is important: else, music will be out of sync
+    $(window).load onload

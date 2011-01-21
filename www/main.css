@@ -4,7 +4,8 @@ body {
     font-family:monospace;
 }
 #assets {
-    display:none;
+    visibility:hidden;/*display:none breaks opera, contents don't load*/
+    position:absolute;top:0px;left:0px;
 }
 #content {
     position:fixed;
@@ -14,12 +15,12 @@ body {
     border: 1px solid black;
     color:blue;
 }
-#content, #paused, #intro, #gameover, #living,#nonliving {
+#content, #paused, #intro, #loading, #gameover, #living,#nonliving {
     -moz-border-radius:10px;
     border-radius:10px;
 }
 
-#paused, #intro, #gameover {
+#paused, #intro, #gameover, #loading {
     position:absolute;left:0px;top:0px;
     text-align:center;
     width:640px;
