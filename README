@@ -1,0 +1,21 @@
+A little HTML5 shoot-em-up about Alice and her dolls.
+http://touhou.nfshost.com/margatroid/
+
+The game runs in your browser. Best played in Chrome; also works in Firefox and Opera. Internet Explorer will not work.
+
+If you have trouble, try it without sound.
+http://touhou.nfshost.com/margatroid/mute.html
+
+The game's characters - Alice Margatroid, Reimu Hakurei, Shanghai Doll - all come from Touhou. I do not own their copyright.
+http://touhouwiki.net/
+
+I created this game's graphics with Inkscape, music with LMMS, and sound effects with sfxr. Programming is done in the Coffeescript language, using the JQuery and Underscore libraries.
+http://www.inkscape.org/
+http://lmms.sourceforge.net/
+http://www.drpetter.se/project_sfxr.html
+http://coffeescript.org/
+http://jquery.com/
+http://documentcloud.github.com/underscore/
+
+Created in under 7 days, per experimentalgameplay rules.
+http://experimentalgameplay.com/blog/2011/01/january-is-inanimate/
