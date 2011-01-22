@@ -300,13 +300,13 @@ do ->
           # a percentage faster every time, and high levels don't have
           # huge jumps relative to early levels, or have (for example)
           # level 100 spawn infinite dolls per frame.
-          max: Math.floor 3333 * Math.pow 0.96, @stage-1
+          max: Math.floor 3333 * Math.pow 0.98, @stage-1
           incr:
             # Normal spawn rate is a baseline.
             normal: 5
             # Spawn even faster while the player shoots, a little
             # faster every few rounds (7, 14, 21...)
-            shooting: 50 + 10*((Math.floor (stage-1)/7) or 0)
+            shooting: 50 + 4*((Math.floor (stage-1)/7) or 0)
       console.log 'stage', @stage, JSON.stringify @config
 
       if @boss?
@@ -472,7 +472,7 @@ do ->
     #$(document).ready ->
     #  alert 'document.ready'
     loading =
-      bgm: $('#assets audio.bgm').length
+      bgm: $('#assets audio.bgm[src!=""]').length
       bgmloaded: {}
       win: true #this breaks opera, and usually finishes first anyway
       done: false
@@ -480,6 +480,7 @@ do ->
         if @bgm == 0 and @win and not @done
           @done = true
           onload()
+    console.log loading.bgm
     # window.onload waits for images, but not audio. Wait for audio.
     # firefox won't fire canplaythrough, chrome won't fire suspend
     loadAudio = ->
@@ -491,6 +492,9 @@ do ->
     $('#assets audio.bgm').bind
       suspend: loadAudio
       canplaythrough: loadAudio
+    # for mute
+    $(document).ready ->
+      loading.tryload()
 
     #$(window).load ->
     #  console.log 'window loaded'
