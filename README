@@ -9,6 +9,9 @@ http://touhou.nfshost.com/margatroid/mute.html
 The game's characters - Alice Margatroid, Reimu Hakurei, Shanghai Doll - all come from Touhou. I do not own their copyright.
 http://touhouwiki.net/
 
+Music is based on Mystic Square's "Alice in Wonderland."
+http://www.youtube.com/watch?v=uvWEiHFEg3o
+
 I created this game's graphics with Inkscape, music with LMMS, and sound effects with sfxr. Programming is done in the Coffeescript language, using the JQuery and Underscore libraries.
 http://www.inkscape.org/
 http://lmms.sourceforge.net/
